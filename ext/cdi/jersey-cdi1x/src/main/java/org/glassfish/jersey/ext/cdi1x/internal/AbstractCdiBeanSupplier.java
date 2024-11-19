@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2023 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2024 Oracle and/or its affiliates. All rights reserved.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0, which is available at
@@ -19,7 +19,6 @@ package org.glassfish.jersey.ext.cdi1x.internal;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.annotation.Annotation;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -69,27 +68,29 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
         this.qualifiers = CdiUtil.getQualifiers(clazz.getAnnotations());
         this.referenceProvider = cdiManaged ? new InstanceManager<T>() {
 
-            final Iterator<Bean<?>> beans = beanManager.getBeans(clazz, qualifiers).iterator();
-            final Bean bean = beans.hasNext() ? beans.next() : null;
+            final Bean<?> bean = beanManager.resolve(beanManager.getBeans(clazz, qualifiers));
+            final CreationalContext<T> cc = beanManager.<T>createCreationalContext(null);
 
             @Override
             public T getInstance(final Class<T> clazz) {
-                return (bean != null) ? CdiUtil.getBeanReference(clazz, bean, beanManager) : null;
+                assert clazz == AbstractCdiBeanSupplier.this.clazz;
+                return (T) beanManager.getReference(bean, clazz, cc);
             }
 
             @Override
             public void preDestroy(final T instance) {
-                // do nothing
+                cc.release();
             }
         } : new InstanceManager<T>() {
 
             final AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(clazz);
             final InjectionTargetFactory<T> injectionTargetFactory = beanManager.getInjectionTargetFactory(annotatedType);
             final InjectionTarget<T> injectionTarget = injectionTargetFactory.createInjectionTarget(null);
+            final CreationalContext<T> creationalContext = beanManager.createCreationalContext(null);
 
             @Override
             public T getInstance(final Class<T> clazz) {
-                final CreationalContext<T> creationalContext = beanManager.createCreationalContext(null);
+                assert clazz == AbstractCdiBeanSupplier.this.clazz;
                 final T instance = produce(injectionTarget, creationalContext, injectionManager, clazz);
                 final CdiComponentProvider cdiComponentProvider = beanManager.getExtension(CdiComponentProvider.class);
                 final CdiComponentProvider.InjectionManagerInjectedCdiTarget hk2managedTarget =
@@ -107,7 +108,11 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
 
             @Override
             public void preDestroy(final T instance) {
-                injectionTarget.preDestroy(instance);
+                try {
+                    injectionTarget.preDestroy(instance);
+                } finally {
+                    creationalContext.release();
+                }
             }
         };
     }

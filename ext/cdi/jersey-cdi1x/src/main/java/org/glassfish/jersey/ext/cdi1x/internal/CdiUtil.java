@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2021 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2024 Oracle and/or its affiliates. All rights reserved.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0, which is available at
@@ -60,9 +60,10 @@ public final class CdiUtil {
      * @return annotations from the input list that are marked as qualifiers
      */
     public static Annotation[] getQualifiers(final Annotation[] annotations) {
+        final BeanManager bm = getBeanManager();
         final List<Annotation> result = new ArrayList<>(annotations.length);
         for (final Annotation a : annotations) {
-            if (a.annotationType().isAnnotationPresent(Qualifier.class)) {
+            if (bm.isQualifier(a.annotationType())) {
                 result.add(a);
             }
         }
