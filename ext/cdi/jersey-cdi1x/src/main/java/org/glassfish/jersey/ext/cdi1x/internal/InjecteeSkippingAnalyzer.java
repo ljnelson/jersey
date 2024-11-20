@@ -111,7 +111,7 @@ public final class InjecteeSkippingAnalyzer implements ClassAnalyzer {
     private void addCdiInjectedFieldsToSkip(Set<Field> skippedFields, Set<Field> originalFields) {
         for (Field field : originalFields) {
             if (!cdiComponentProvider.isHk2ProvidedType(field.getType())
-                && !beanManager.createAnnotatedType(field.getType()).isAnnotationPresent(Inject.class)) {
+                && beanManager.createAnnotatedType(field.getType()).isAnnotationPresent(Inject.class)) {
                 skippedFields.add(field);
             }
         }
