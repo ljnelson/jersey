@@ -101,6 +101,7 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
 
             @Override
             public T getInstance(final Class<T> clazz) {
+                assert clazz == AbstractCdiBeanSupplier.this.clazz;
                 final CreationalContext<T> creationalContext = beanManager.createCreationalContext(null);
                 final T instance = produce(injectionTarget, creationalContext, injectionManager, clazz);
                 hk2managedTarget.inject(instance, creationalContext);
