@@ -154,14 +154,7 @@ public final class CdiUtil {
      * @return actual bean scope or null, if the scope could not be determined.
      */
     public static Class<? extends Annotation> getBeanScope(final Class<?> beanClass, final BeanManager beanManager) {
-        final Set<Bean<?>> beans = beanManager.getBeans(beanClass);
-        if (beans.isEmpty()) {
-            return null;
-        }
-        for (Bean b : beans) {
-            return b.getScope();
-        }
-        return null;
+        return beanManager.createBeanAttributes(beanManager.createAnnotatedType(beanClass)).getScope();
     }
 
     static final boolean IS_SERVER_AVAILABLE = isServerAvailable();
