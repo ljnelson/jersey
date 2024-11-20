@@ -74,13 +74,12 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
             private final Instance<T> instance = beanManager.createInstance().select(clazz);
 
             @Override
-            public T getInstance(final Class<T> clazz) {
-                assert clazz == AbstractCdiBeanSupplier.this.clazz;
-                return instance.get();
+            public T getInstance() {
+                return this.instance.get();
             }
 
             @Override
-            public void preDestroy(final T instance) {
+            public void dispose(final T instance) {
                 this.instance.destroy(instance);
             }
         } : new InstanceManager<T>() {
@@ -100,8 +99,7 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
                     };
 
             @Override
-            public T getInstance(final Class<T> clazz) {
-                assert clazz == AbstractCdiBeanSupplier.this.clazz;
+            public T getInstance() {
                 final CreationalContext<T> creationalContext = beanManager.createCreationalContext(null);
                 final T instance = produce(injectionTarget, creationalContext, injectionManager, clazz);
                 hk2managedTarget.inject(instance, creationalContext);
@@ -110,7 +108,7 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
             }
 
             @Override
-            public void preDestroy(final T instance) {
+            public void dispose(final T instance) {
                 hk2managedTarget.preDestroy(instance);
                 hk2managedTarget.dispose(instance);
             }
@@ -140,7 +138,7 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
 
     @SuppressWarnings(value = "unchecked")
     /* package */ T _provide() {
-        final T instance = referenceProvider.getInstance(clazz);
+        final T instance = referenceProvider.getInstance();
         if (instance != null) {
             return instance;
         }
@@ -149,7 +147,7 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
 
     @Override
     public void dispose(final T instance) {
-        referenceProvider.preDestroy(instance);
+        referenceProvider.dispose(instance);
     }
 
     private interface InstanceManager<T> {
@@ -157,16 +155,15 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
         /**
          * Get me correctly instantiated and injected instance.
          *
-         * @param clazz type of the component to instantiate.
          * @return injected component instance.
          */
-        T getInstance(Class<T> clazz);
+        T getInstance();
 
         /**
          * Do whatever needs to be done before given instance is destroyed.
          *
          * @param instance to be destroyed.
          */
-        void preDestroy(T instance);
+        void dispose(T instance);
     }
 }
