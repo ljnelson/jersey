@@ -110,6 +110,7 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
             public void preDestroy(final T instance) {
                 try {
                     injectionTarget.preDestroy(instance);
+                    injectionTarget.dispose(instance);
                 } finally {
                     creationalContext.release();
                 }
