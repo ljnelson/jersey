@@ -41,6 +41,7 @@ import org.glassfish.jersey.model.internal.RankedProvider;
  *
  * @author Jakub Podlesak
  * @author Michal Gajdos
+ * @author Laird Nelson
  */
 public final class CdiUtil {
 
@@ -58,12 +59,27 @@ public final class CdiUtil {
      *
      * @param annotations list of annotations to introspect
      * @return annotations from the input list that are marked as qualifiers
+     *
+     * @see #getQualifiers(Annotation[], BeanManager)
+     *
+     * @deprecated Please use the {@link #getQualifiers(Annotation[], BeanManager)} method instead.
      */
+    @Deprecated
     public static Annotation[] getQualifiers(final Annotation[] annotations) {
-        final BeanManager bm = getBeanManager();
+        return getQualifiers(annotations, getBeanManager());
+    }
+
+    /**
+     * Get me list of qualifiers included in given annotation list.
+     *
+     * @param annotations list of annotations to introspect
+     * @param beanManager a bean manager
+     * @return annotations from the input list that are marked as qualifiers
+     */
+    public static Annotation[] getQualifiers(final Annotation[] annotations, final BeanManager beanManager) {
         final List<Annotation> result = new ArrayList<>(annotations.length);
         for (final Annotation a : annotations) {
-            if (bm.isQualifier(a.annotationType())) {
+            if (beanManager.isQualifier(a.annotationType())) {
                 result.add(a);
             }
         }
@@ -140,14 +156,7 @@ public final class CdiUtil {
      * @return actual bean scope or null, if the scope could not be determined.
      */
     public static Class<? extends Annotation> getBeanScope(final Class<?> beanClass, final BeanManager beanManager) {
-        final Set<Bean<?>> beans = beanManager.getBeans(beanClass);
-        if (beans.isEmpty()) {
-            return null;
-        }
-        for (Bean b : beans) {
-            return b.getScope();
-        }
-        return null;
+        return beanManager.createBeanAttributes(beanManager.createAnnotatedType(beanClass)).getScope();
     }
 
     static final boolean IS_SERVER_AVAILABLE = isServerAvailable();

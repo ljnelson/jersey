@@ -65,7 +65,7 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
                                      final boolean cdiManaged) {
 
         this.clazz = rawType;
-        this.qualifiers = CdiUtil.getQualifiers(clazz.getAnnotations());
+        this.qualifiers = CdiUtil.getQualifiers(clazz.getAnnotations(), beanManager);
         this.referenceProvider = cdiManaged ? new InstanceManager<T>() {
 
             final Bean<?> bean = beanManager.resolve(beanManager.getBeans(clazz, qualifiers));
