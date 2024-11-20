@@ -138,7 +138,11 @@ public final class CdiUtil {
      * @param beanManager   bean manager used to obtain an instance of the requested bean.
      * @param <T>           type of the bean to be returned.
      * @return a bean reference or {@code null} if a bean instance cannot be found.
+     *
+     * @deprecated This method does not permit the {@link CreationalContext} it uses to be {@linkplain
+     * CreationalContext#release() released}. Consider using other means of acquiring contextual references.
      */
+    @Deprecated
     static <T> T getBeanReference(final Class<T> clazz, final Bean bean, final BeanManager beanManager) {
         final CreationalContext<?> creationalContext = beanManager.createCreationalContext(bean);
         final Object result = beanManager.getReference(bean, clazz, creationalContext);

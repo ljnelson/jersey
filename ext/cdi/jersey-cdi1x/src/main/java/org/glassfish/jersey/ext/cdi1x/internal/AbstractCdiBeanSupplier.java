@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 
 import jakarta.enterprise.context.spi.Contextual;
 import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.spi.AnnotatedType;
 import jakarta.enterprise.inject.spi.Bean;
 import jakarta.enterprise.inject.spi.BeanManager;
@@ -69,17 +70,17 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
         this.qualifiers = CdiUtil.getQualifiers(clazz.getAnnotations(), beanManager);
         this.referenceProvider = cdiManaged ? new InstanceManager<T>() {
 
-            final Iterator<Bean<?>> beans = beanManager.getBeans(clazz, qualifiers).iterator();
-            final Bean bean = beans.hasNext() ? beans.next() : null;
+            private final Instance<T> instance = beanManager.createInstance().select(clazz);
 
             @Override
             public T getInstance(final Class<T> clazz) {
-                return (bean != null) ? CdiUtil.getBeanReference(clazz, bean, beanManager) : null;
+                assert clazz == AbstractCdiBeanSupplier.this.clazz;
+                return instance.get();
             }
 
             @Override
             public void preDestroy(final T instance) {
-                // do nothing
+                this.instance.destroy(instance);
             }
         } : new InstanceManager<T>() {
 
