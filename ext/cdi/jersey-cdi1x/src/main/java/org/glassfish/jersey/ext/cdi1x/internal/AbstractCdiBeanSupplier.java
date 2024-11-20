@@ -76,7 +76,7 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
 
             @Override
             public void preDestroy(final T instance) {
-                i.destroy(instance);
+                i.destroy(instance); // releases any affiliated CreationalContexts appropriately
             }
         } : new InstanceManager<T>() {
 
