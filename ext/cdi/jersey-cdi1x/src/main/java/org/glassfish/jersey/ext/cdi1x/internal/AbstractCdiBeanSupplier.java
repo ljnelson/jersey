@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2023 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2024 Oracle and/or its affiliates. All rights reserved.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0, which is available at
@@ -66,7 +66,7 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
                                      final boolean cdiManaged) {
 
         this.clazz = rawType;
-        this.qualifiers = CdiUtil.getQualifiers(clazz.getAnnotations());
+        this.qualifiers = CdiUtil.getQualifiers(clazz.getAnnotations(), beanManager);
         this.referenceProvider = cdiManaged ? new InstanceManager<T>() {
 
             final Iterator<Bean<?>> beans = beanManager.getBeans(clazz, qualifiers).iterator();

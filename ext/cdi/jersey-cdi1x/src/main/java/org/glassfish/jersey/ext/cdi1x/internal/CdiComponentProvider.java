@@ -268,7 +268,7 @@ public class CdiComponentProvider implements ComponentProvider, Extension {
     }
 
     private boolean isCdiComponent(final Class<?> component) {
-        final Annotation[] qualifiers = CdiUtil.getQualifiers(component.getAnnotations());
+        final Annotation[] qualifiers = CdiUtil.getQualifiers(component.getAnnotations(), beanManager);
         return !beanManager.getBeans(component, qualifiers).isEmpty();
     }
 
