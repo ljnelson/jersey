@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2020 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2024 Oracle and/or its affiliates. All rights reserved.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0, which is available at
@@ -110,7 +110,8 @@ public final class InjecteeSkippingAnalyzer implements ClassAnalyzer {
 
     private void addCdiInjectedFieldsToSkip(Set<Field> skippedFields, Set<Field> originalFields) {
         for (Field field : originalFields) {
-            if (field.getAnnotation(Inject.class) != null && !cdiComponentProvider.isHk2ProvidedType(field.getType())) {
+            if (!cdiComponentProvider.isHk2ProvidedType(field.getType())
+                && beanManager.createAnnotatedType(field.getType()).isAnnotationPresent(Inject.class)) {
                 skippedFields.add(field);
             }
         }
