@@ -23,14 +23,11 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.InjectionTarget;
-import javax.enterprise.inject.spi.InjectionTargetFactory;
 import javax.enterprise.inject.spi.Producer;
 
 import org.glassfish.jersey.internal.inject.DisposableSupplier;
@@ -69,18 +66,17 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
         this.qualifiers = CdiUtil.getQualifiers(clazz.getAnnotations(), beanManager);
         this.referenceProvider = cdiManaged ? new InstanceManager<T>() {
 
-            final Bean<?> bean = beanManager.resolve(beanManager.getBeans(clazz, qualifiers));
-            final CreationalContext<T> cc = beanManager.<T>createCreationalContext(null);
+            final Instance<T> i = beanManager.createInstance().select(clazz);
 
             @Override
             public T getInstance(final Class<T> clazz) {
                 assert clazz == AbstractCdiBeanSupplier.this.clazz;
-                return (T) beanManager.getReference(bean, clazz, cc);
+                return i.get();
             }
 
             @Override
             public void preDestroy(final T instance) {
-                cc.release();
+                i.destroy(instance);
             }
         } : new InstanceManager<T>() {
 
