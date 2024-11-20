@@ -86,15 +86,14 @@ public abstract class AbstractCdiBeanSupplier<T> implements DisposableSupplier<T
                 .createInjectionTarget(null);
             final CdiComponentProvider.InjectionManagerInjectedCdiTarget hk2managedTarget =
                 cdiComponentProvider.new InjectionManagerInjectedCdiTarget(injectionTarget) {
+                        {
+                            setInjectionManager(injectionManager);
+                        }
                         @Override
                         public Set<InjectionPoint> getInjectionPoints() {
                             return injectionTarget.getInjectionPoints();
                         }
                     };
-
-            {
-                hk2managedTarget.setInjectionManager(injectionManager);
-            }
 
             @Override
             public T getInstance(final Class<T> clazz) {
